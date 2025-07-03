@@ -8,9 +8,10 @@ import { SQLiteDatabase } from 'expo-sqlite';
 export const DATABASE_VERSION = 1;
 
 export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
-  const { user_version: currentVersion } = await db.getFirstAsync<{ user_version: number }>(
+  const result = await db.getFirstAsync<{ user_version: number }>(
     'PRAGMA user_version'
   );
+  const currentVersion = result?.user_version || 0;
 
   if (currentVersion >= DATABASE_VERSION) {
     return;

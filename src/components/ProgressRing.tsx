@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
 
 interface ProgressRingProps {
   progress: number; // 0-100
@@ -19,8 +18,6 @@ interface ProgressRingProps {
   duration?: number;
 }
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
 export function ProgressRing({
   progress,
   size = 100,
@@ -32,12 +29,7 @@ export function ProgressRing({
   duration = 1000
 }: ProgressRingProps) {
   const animatedValue = useRef(new Animated.Value(0)).current;
-  const circleRef = useRef<any>(null);
   
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const center = size / 2;
-
   useEffect(() => {
     if (animated) {
       Animated.timing(animatedValue, {
@@ -50,21 +42,6 @@ export function ProgressRing({
     }
   }, [progress, animated, duration, animatedValue]);
 
-  useEffect(() => {
-    const listener = animatedValue.addListener(({ value }) => {
-      if (circleRef.current) {
-        const strokeDashoffset = circumference - (circumference * value) / 100;
-        circleRef.current.setNativeProps({
-          strokeDashoffset,
-        });
-      }
-    });
-
-    return () => {
-      animatedValue.removeListener(listener);
-    };
-  }, [animatedValue, circumference]);
-
   const getProgressColor = (progressValue: number): string => {
     if (progressValue >= 90) return '#10B981'; // Green
     if (progressValue >= 60) return '#F59E0B'; // Yellow
@@ -73,35 +50,42 @@ export function ProgressRing({
   };
 
   const currentColor = getProgressColor(progress);
+  const radius = (size - strokeWidth) / 2;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} style={styles.svg}>
-        {/* Background circle */}
-        <Circle
-          cx={center}
-          cy={center}
-          r={radius}
-          stroke={backgroundColor}
-          strokeWidth={strokeWidth}
-          fill="transparent"
-        />
-        
-        {/* Progress circle */}
-        <AnimatedCircle
-          ref={circleRef}
-          cx={center}
-          cy={center}
-          r={radius}
-          stroke={currentColor}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference}
-          strokeLinecap="round"
-          fill="transparent"
-          transform={`rotate(-90 ${center} ${center})`}
-        />
-      </Svg>
+      {/* Background ring */}
+      <View
+        style={[
+          styles.ring,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: strokeWidth,
+            borderColor: backgroundColor,
+          }
+        ]}
+      />
+      
+      {/* Progress ring overlay */}
+      <Animated.View
+        style={[
+          styles.progressRing,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            borderWidth: strokeWidth,
+            borderColor: currentColor,
+            borderTopColor: 'transparent',
+            borderRightColor: progress > 25 ? currentColor : 'transparent',
+            borderBottomColor: progress > 50 ? currentColor : 'transparent',
+            borderLeftColor: progress > 75 ? currentColor : 'transparent',
+            transform: [{ rotate: '-90deg' }],
+          }
+        ]}
+      />
       
       {showPercentage && (
         <View style={styles.textContainer}>
@@ -164,6 +148,12 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+  },
+  progressRing: {
+    position: 'absolute',
   },
   svg: {
     position: 'absolute',
