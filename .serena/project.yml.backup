@@ -1,0 +1,65 @@
+# Serena MCP Project Configuration
+# This configuration file defines project-specific settings for Serena MCP server
+
+# Project metadata
+name: "sendloop"
+description: "React Native/Expo project with Serena MCP integration"
+type: "react-native"
+
+# Language settings
+languages:
+  - typescript
+  - javascript
+  - json
+
+# File patterns to include in semantic analysis
+include_patterns:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.json"
+  - "**/*.md"
+  - "app.json"
+  - "package.json"
+  - "tsconfig.json"
+  - "expo-env.d.ts"
+
+# File patterns to exclude from semantic analysis
+exclude_patterns:
+  - "node_modules/**"
+  - "dist/**"
+  - "build/**"
+  - ".expo/**"
+  - "*.log"
+  - "*.tmp"
+  - ".git/**"
+  - ".next/**"
+  - "coverage/**"
+
+# Project structure
+main_directories:
+  - "app"
+  - "assets"
+  - "components"
+  - "constants"
+  - "hooks"
+
+# Development configuration
+development:
+  hot_reload: true
+  watch_patterns:
+    - "app/**"
+    - "components/**"
+    - "constants/**"
+    - "hooks/**"
+
+# MCP server specific settings
+mcp:
+  context: "ide-assistant"
+  modes:
+    - "interactive"
+    - "editing"
+  enable_semantic_search: true
+  enable_code_completion: true
+  enable_refactoring: true

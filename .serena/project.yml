@@ -1,0 +1,21 @@
+# Minimal Serena MCP Project Configuration
+name: "sendloop"
+description: "React Native/Expo project"
+
+# Basic language support
+language: "typescript"
+
+# Include patterns
+include:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.json"
+
+# Exclude patterns  
+exclude:
+  - "node_modules/**"
+  - ".expo/**"
+  - "dist/**"
+  - "build/**"
