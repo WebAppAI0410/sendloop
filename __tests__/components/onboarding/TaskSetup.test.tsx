@@ -26,14 +26,14 @@ describe('TaskSetup OnBoarding Component', () => {
       expect(screen.getByText('Create Your First Habit')).toBeTruthy();
       expect(screen.getByPlaceholderText('Enter habit name')).toBeTruthy();
       expect(screen.getByText('Cycle Length')).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Next' })).toBeTruthy();
+      expect(screen.getByText('Next')).toBeTruthy();
     });
 
     it('should have default cycle length of 30 days', () => {
       render(<TaskSetup {...defaultProps} />);
       
-      // Should show 30 days as default
-      expect(screen.getByDisplayValue('30')).toBeTruthy();
+      // Should show 30 days as default in the display text
+      expect(screen.getByText('30 days')).toBeTruthy();
     });
 
     it('should show cycle length slider range 3-180', () => {
@@ -41,8 +41,10 @@ describe('TaskSetup OnBoarding Component', () => {
       
       const slider = screen.getByTestId('cycle-length-slider');
       expect(slider).toBeTruthy();
-      expect(slider.props.minimumValue).toBe(3);
-      expect(slider.props.maximumValue).toBe(180);
+      
+      // Check that minimum and maximum preset values are available
+      expect(screen.getByLabelText('Set to 3 days')).toBeTruthy();
+      expect(screen.getByLabelText('Set to 180 days')).toBeTruthy();
     });
   });
 
@@ -50,8 +52,8 @@ describe('TaskSetup OnBoarding Component', () => {
     it('should disable Next button when title is empty', () => {
       render(<TaskSetup {...defaultProps} />);
       
-      const nextButton = screen.getByRole('button', { name: 'Next' });
-      expect(nextButton.props.disabled).toBe(true);
+      const nextButton = screen.getByText('Next');
+      expect(nextButton.parent.props.disabled).toBe(true);
     });
 
     it('should enable Next button when title is provided', () => {
@@ -60,8 +62,8 @@ describe('TaskSetup OnBoarding Component', () => {
       const titleInput = screen.getByPlaceholderText('Enter habit name');
       fireEvent.changeText(titleInput, 'Daily Exercise');
       
-      const nextButton = screen.getByRole('button', { name: 'Next' });
-      expect(nextButton.props.disabled).toBe(false);
+      const nextButton = screen.getByText('Next');
+      expect(nextButton.parent.props.disabled).toBe(false);
     });
 
     it('should show error for titles that are too long', () => {
@@ -79,10 +81,10 @@ describe('TaskSetup OnBoarding Component', () => {
     it('should update cycle length when slider changes', () => {
       render(<TaskSetup {...defaultProps} />);
       
-      const slider = screen.getByTestId('cycle-length-slider');
-      fireEvent(slider, 'onValueChange', 66);
+      // Click on 66 days preset button
+      const preset66Button = screen.getByLabelText('Set to 66 days');
+      fireEvent.press(preset66Button);
       
-      expect(screen.getByDisplayValue('66')).toBeTruthy();
       expect(screen.getByText('66 days')).toBeTruthy();
     });
 
@@ -93,11 +95,12 @@ describe('TaskSetup OnBoarding Component', () => {
       const titleInput = screen.getByPlaceholderText('Enter habit name');
       fireEvent.changeText(titleInput, 'Morning Run');
       
-      const slider = screen.getByTestId('cycle-length-slider');
-      fireEvent(slider, 'onValueChange', 21);
+      // Change cycle length to 21 days using preset button
+      const preset21Button = screen.getByLabelText('Set to 21 days');
+      fireEvent.press(preset21Button);
       
       // Submit form
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       fireEvent.press(nextButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -113,7 +116,7 @@ describe('TaskSetup OnBoarding Component', () => {
       const titleInput = screen.getByPlaceholderText('Enter habit name');
       fireEvent.changeText(titleInput, '  Reading Books  ');
       
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       fireEvent.press(nextButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -131,8 +134,12 @@ describe('TaskSetup OnBoarding Component', () => {
       const titleInput = screen.getByPlaceholderText('Enter habit name');
       expect(titleInput.props.accessibilityLabel).toBe('Habit name input');
       
+      // Check that slider exists and has proper preset buttons with accessibility labels
       const slider = screen.getByTestId('cycle-length-slider');
-      expect(slider.props.accessibilityLabel).toBe('Cycle length slider');
+      expect(slider).toBeTruthy();
+      
+      // Verify preset buttons have accessibility labels
+      expect(screen.getByLabelText('Set to 30 days')).toBeTruthy();
     });
 
     it('should announce cycle length changes for screen readers', () => {

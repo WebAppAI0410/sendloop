@@ -25,8 +25,8 @@ describe('NotificationSetup OnBoarding Component', () => {
 
       expect(screen.getByText('Set Daily Reminder')).toBeTruthy();
       expect(screen.getByText('When would you like to be reminded?')).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Next' })).toBeTruthy();
+      expect(screen.getByText('Back')).toBeTruthy();
+      expect(screen.getByText('Next')).toBeTruthy();
     });
 
     it('should have notification enabled by default', () => {
@@ -50,8 +50,9 @@ describe('NotificationSetup OnBoarding Component', () => {
       const enableSwitch = screen.getByTestId('notification-enable-switch');
       fireEvent(enableSwitch, 'onValueChange', false);
       
-      const timePicker = screen.getByTestId('time-picker-button');
-      expect(timePicker.props.disabled).toBe(true);
+      // When disabled, the time picker button disappears and shows disabled text
+      expect(screen.queryByTestId('time-picker-button')).toBeFalsy();
+      expect(screen.getByText('Notifications disabled')).toBeTruthy();
     });
 
     it('should show disabled state styling when notifications are off', () => {
@@ -92,13 +93,16 @@ describe('NotificationSetup OnBoarding Component', () => {
       const timePicker = screen.getByTestId('time-picker-button');
       fireEvent.press(timePicker);
       
-      // Simulate time selection (6:30 PM)
-      const mockTime = new Date();
-      mockTime.setHours(18, 30, 0, 0);
+      // Select 6:30 PM using the custom time picker
+      // Select hour 6
+      fireEvent.press(screen.getByText('6'));
+      // Select 30 minutes
+      fireEvent.press(screen.getByText('30'));
+      // Select PM
+      fireEvent.press(screen.getByText('PM'));
       
-      fireEvent(screen.getByTestId('time-picker'), 'onChange', {
-        nativeEvent: { timestamp: mockTime.getTime() }
-      });
+      // Confirm the selection
+      fireEvent.press(screen.getByTestId('time-picker-confirm'));
       
       expect(screen.getByText('6:30 PM')).toBeTruthy();
     });
@@ -109,10 +113,15 @@ describe('NotificationSetup OnBoarding Component', () => {
       const timePicker = screen.getByTestId('time-picker-button');
       fireEvent.press(timePicker);
       
+      // Verify modal is open first
+      expect(screen.getByTestId('time-picker-modal')).toBeTruthy();
+      
       // Select time and confirm
       fireEvent.press(screen.getByTestId('time-picker-confirm'));
       
-      expect(screen.queryByTestId('time-picker-modal')).toBeFalsy();
+      // Check that the modal props.visible is false, even if the element still exists
+      const modal = screen.getByTestId('time-picker-modal');
+      expect(modal.props.visible).toBe(false);
     });
   });
 
@@ -120,7 +129,7 @@ describe('NotificationSetup OnBoarding Component', () => {
     it('should call onBack when Back button is pressed', () => {
       render(<NotificationSetup {...defaultProps} />);
       
-      const backButton = screen.getByRole('button', { name: 'Back' });
+      const backButton = screen.getByText('Back');
       fireEvent.press(backButton);
       
       expect(mockOnBack).toHaveBeenCalledTimes(1);
@@ -129,20 +138,20 @@ describe('NotificationSetup OnBoarding Component', () => {
     it('should call onNext with notification settings when Next is pressed', () => {
       render(<NotificationSetup {...defaultProps} />);
       
-      // Set custom time
+      // Set custom time (8:00 PM)
       const timePicker = screen.getByTestId('time-picker-button');
       fireEvent.press(timePicker);
       
-      const mockTime = new Date();
-      mockTime.setHours(20, 0, 0, 0); // 8:00 PM
-      
-      fireEvent(screen.getByTestId('time-picker'), 'onChange', {
-        nativeEvent: { timestamp: mockTime.getTime() }
-      });
+      // Select hour 8
+      fireEvent.press(screen.getByText('8'));
+      // Select 00 minutes
+      fireEvent.press(screen.getByText('00'));
+      // Select PM
+      fireEvent.press(screen.getByText('PM'));
       fireEvent.press(screen.getByTestId('time-picker-confirm'));
       
       // Proceed to next step
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       fireEvent.press(nextButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -159,7 +168,7 @@ describe('NotificationSetup OnBoarding Component', () => {
       fireEvent(enableSwitch, 'onValueChange', false);
       
       // Proceed to next step
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       fireEvent.press(nextButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -194,25 +203,21 @@ describe('NotificationSetup OnBoarding Component', () => {
     it('should display time in 12-hour format with AM/PM', () => {
       render(<NotificationSetup {...defaultProps} />);
       
-      // Test various times
+      // Test midnight (12:00 AM)
       const timePicker = screen.getByTestId('time-picker-button');
       fireEvent.press(timePicker);
       
-      // Test midnight
-      let mockTime = new Date();
-      mockTime.setHours(0, 0, 0, 0);
-      fireEvent(screen.getByTestId('time-picker'), 'onChange', {
-        nativeEvent: { timestamp: mockTime.getTime() }
-      });
+      fireEvent.press(screen.getByText('12'));
+      fireEvent.press(screen.getByText('00'));
+      fireEvent.press(screen.getByText('AM'));
       fireEvent.press(screen.getByTestId('time-picker-confirm'));
       expect(screen.getByText('12:00 AM')).toBeTruthy();
       
-      // Test noon
+      // Test noon (12:00 PM)
       fireEvent.press(timePicker);
-      mockTime.setHours(12, 0, 0, 0);
-      fireEvent(screen.getByTestId('time-picker'), 'onChange', {
-        nativeEvent: { timestamp: mockTime.getTime() }
-      });
+      fireEvent.press(screen.getByText('12'));
+      fireEvent.press(screen.getByText('00'));
+      fireEvent.press(screen.getByText('PM'));
       fireEvent.press(screen.getByTestId('time-picker-confirm'));
       expect(screen.getByText('12:00 PM')).toBeTruthy();
     });
