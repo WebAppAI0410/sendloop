@@ -18,9 +18,6 @@ export function AppNavigator() {
 
   // Show onboarding if no tasks exist
   useEffect(() => {
-    console.log('AppNavigator - tasksLoading:', tasksLoading);
-    console.log('AppNavigator - tasks.length:', tasks.length);
-    console.log('AppNavigator - tasks:', tasks);
     if (!tasksLoading) {
       setShowOnBoarding(tasks.length === 0);
     }
@@ -61,8 +58,6 @@ export function AppNavigator() {
     );
   }
 
-  console.log('AppNavigator - Rendering, showOnBoarding:', showOnBoarding);
-  
   if (showOnBoarding) {
     return (
       <OnBoardingFlow onComplete={handleOnBoardingComplete} />
