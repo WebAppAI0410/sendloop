@@ -12,8 +12,15 @@ describe('VisualSetup OnBoarding Component', () => {
   const mockOnNext = jest.fn();
   const mockOnBack = jest.fn();
   const defaultProps = {
+    selectedType: VisualType.TREE,
     onNext: mockOnNext,
     onBack: mockOnBack,
+    isPro: false,
+  };
+
+  const proProps = {
+    ...defaultProps,
+    isPro: true,
   };
 
   beforeEach(() => {
@@ -30,8 +37,18 @@ describe('VisualSetup OnBoarding Component', () => {
       expect(screen.getByRole('button', { name: 'Finish Setup' })).toBeTruthy();
     });
 
-    it('should display all visual type options', () => {
+    it('should display only tree visual type option for free users', () => {
       render(<VisualSetup {...defaultProps} />);
+
+      // Check for visual type cards
+      expect(screen.getByTestId('visual-option-tree')).toBeTruthy();
+      expect(screen.queryByTestId('visual-option-garden')).toBeFalsy();
+      expect(screen.queryByTestId('visual-option-pet')).toBeFalsy();
+      expect(screen.queryByTestId('visual-option-progress')).toBeFalsy();
+    });
+
+    it('should display all visual type options for pro users', () => {
+      render(<VisualSetup {...proProps} />);
 
       // Check for visual type cards
       expect(screen.getByTestId('visual-option-tree')).toBeTruthy();
@@ -47,8 +64,17 @@ describe('VisualSetup OnBoarding Component', () => {
       expect(treeOption.props.accessibilityState?.selected).toBe(true);
     });
 
-    it('should show visual type descriptions', () => {
+    it('should show visual type descriptions for free users', () => {
       render(<VisualSetup {...defaultProps} />);
+
+      expect(screen.getByText('Watch your tree grow with each completed day')).toBeTruthy();
+      expect(screen.queryByText('Cultivate a beautiful garden over time')).toBeFalsy();
+      expect(screen.queryByText('Care for your virtual pet through consistency')).toBeFalsy();
+      expect(screen.queryByText('Track your progress with a simple bar')).toBeFalsy();
+    });
+
+    it('should show all visual type descriptions for pro users', () => {
+      render(<VisualSetup {...proProps} />);
 
       expect(screen.getByText('Watch your tree grow with each completed day')).toBeTruthy();
       expect(screen.getByText('Cultivate a beautiful garden over time')).toBeTruthy();
@@ -59,7 +85,7 @@ describe('VisualSetup OnBoarding Component', () => {
 
   describe('Visual Type Selection', () => {
     it('should select garden when garden option is pressed', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       const gardenOption = screen.getByTestId('visual-option-garden');
       fireEvent.press(gardenOption);
@@ -72,7 +98,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should select pet when pet option is pressed', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       const petOption = screen.getByTestId('visual-option-pet');
       fireEvent.press(petOption);
@@ -81,7 +107,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should select progress bar when progress option is pressed', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       const progressOption = screen.getByTestId('visual-option-progress');
       fireEvent.press(progressOption);
@@ -90,7 +116,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should update visual preview when selection changes', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       // Initial tree preview
       expect(screen.getByTestId('visual-preview-tree')).toBeTruthy();
@@ -118,7 +144,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should show garden visual elements when garden is selected', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       const gardenOption = screen.getByTestId('visual-option-garden');
       fireEvent.press(gardenOption);
@@ -133,7 +159,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should show pet visual elements when pet is selected', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       const petOption = screen.getByTestId('visual-option-pet');
       fireEvent.press(petOption);
@@ -148,7 +174,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should show progress bar when progress is selected', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       const progressOption = screen.getByTestId('visual-option-progress');
       fireEvent.press(progressOption);
@@ -215,7 +241,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should call onNext with progress visual type when progress is selected', () => {
-      render(<VisualSetup {...defaultProps} />);
+      render(<VisualSetup {...proProps} />);
       
       // Select progress
       const progressOption = screen.getByTestId('visual-option-progress');
@@ -239,17 +265,19 @@ describe('VisualSetup OnBoarding Component', () => {
       expect(treeOption.props.accessibilityLabel).toBe('Select tree visual');
       expect(treeOption.props.accessibilityHint).toBe('Choose growing tree as your progress visualization');
       
-      const gardenOption = screen.getByTestId('visual-option-garden');
-      expect(gardenOption.props.accessibilityLabel).toBe('Select garden visual');
+      // Garden option is only available for pro users
+      expect(screen.queryByTestId('visual-option-garden')).toBeFalsy();
     });
 
     it('should announce selection state changes', () => {
       render(<VisualSetup {...defaultProps} />);
       
-      const gardenOption = screen.getByTestId('visual-option-garden');
-      fireEvent.press(gardenOption);
+      // Garden option should not exist for free users
+      expect(screen.queryByTestId('visual-option-garden')).toBeFalsy();
       
-      expect(gardenOption.props.accessibilityState?.selected).toBe(true);
+      // Tree should remain selected
+      const treeOption = screen.getByTestId('visual-option-tree');
+      expect(treeOption.props.accessibilityState?.selected).toBe(true);
     });
 
     it('should have proper accessibility role for visual options', () => {
@@ -267,11 +295,11 @@ describe('VisualSetup OnBoarding Component', () => {
       // Tree should show growth stages info
       expect(screen.getByText('Growth Stages: 🌱 → 🌿 → 🌳')).toBeTruthy();
       
-      // Change to garden
-      const gardenOption = screen.getByTestId('visual-option-garden');
-      fireEvent.press(gardenOption);
+      // For free users, garden option doesn't exist
+      expect(screen.queryByTestId('visual-option-garden')).toBeFalsy();
       
-      expect(screen.getByText('Flowers bloom: 🌷 → 🌻 → 🌺')).toBeTruthy();
+      // Tree stages info should be shown
+      expect(screen.getByText('Growth Stages: 🌱 → 🌿 → 🌳')).toBeTruthy();
     });
   });
 });

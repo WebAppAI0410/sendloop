@@ -26,7 +26,7 @@ describe('DatabaseService - Task Creation', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    databaseService = new DatabaseService();
+    databaseService = new DatabaseService(mockDb as any);
   });
 
   describe('createTask', () => {

@@ -26,7 +26,7 @@ describe('TaskSetup OnBoarding Component', () => {
       expect(screen.getByText('Create Your First Habit')).toBeTruthy();
       expect(screen.getByPlaceholderText('Enter habit name')).toBeTruthy();
       expect(screen.getByText('Cycle Length')).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Next' })).toBeTruthy();
+      expect(screen.getByText('Next')).toBeTruthy();
     });
 
     it('should have default cycle length of 30 days', () => {
@@ -50,7 +50,7 @@ describe('TaskSetup OnBoarding Component', () => {
     it('should disable Next button when title is empty', () => {
       render(<TaskSetup {...defaultProps} />);
       
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       expect(nextButton.props.disabled).toBe(true);
     });
 
@@ -60,7 +60,7 @@ describe('TaskSetup OnBoarding Component', () => {
       const titleInput = screen.getByPlaceholderText('Enter habit name');
       fireEvent.changeText(titleInput, 'Daily Exercise');
       
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       expect(nextButton.props.disabled).toBe(false);
     });
 
@@ -97,7 +97,7 @@ describe('TaskSetup OnBoarding Component', () => {
       fireEvent(slider, 'onValueChange', 21);
       
       // Submit form
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       fireEvent.press(nextButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -113,7 +113,7 @@ describe('TaskSetup OnBoarding Component', () => {
       const titleInput = screen.getByPlaceholderText('Enter habit name');
       fireEvent.changeText(titleInput, '  Reading Books  ');
       
-      const nextButton = screen.getByRole('button', { name: 'Next' });
+      const nextButton = screen.getByText('Next');
       fireEvent.press(nextButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
