@@ -30,9 +30,9 @@ export interface TaskWithProgress extends Task {
 
 export enum VisualType {
   TREE = 0,
-  FLOWER = 1,
-  FISH = 2,
-  STARS = 3
+  GARDEN = 1,
+  PET = 2,
+  PROGRESS_BAR = 3
 }
 
 export interface TaskCreateInput {

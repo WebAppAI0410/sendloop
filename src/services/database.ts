@@ -22,23 +22,36 @@ export class DatabaseService {
    * TASK OPERATIONS
    */
 
-  async createTask(input: TaskCreateInput): Promise<DatabaseResult<Task>> {
-    try {
-      const id = Crypto.randomUUID();
-      const startDate = input.start_date || new Date().toISOString().split('T')[0];
-      
-      await this.db.runAsync(
-        `INSERT INTO tasks (id, title, cycle_length, visual_type, start_date, archived)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [id, input.title, input.cycle_length, input.visual_type, startDate, false]
-      );
-
-      const task = await this.getTaskById(id);
-      return { success: true, data: task.data };
-    } catch (error) {
-      console.error('Error creating task:', error);
-      return { success: false, error: String(error) };
+  async createTask(input: TaskCreateInput): Promise<Task> {
+    // Validation - TDD Red -> Green implementation
+    if (!input.title || input.title.trim() === '') {
+      throw new Error('Task title cannot be empty');
     }
+    
+    if (input.cycle_length < 3 || input.cycle_length > 180) {
+      throw new Error('Cycle length must be between 3 and 180 days');
+    }
+
+    const id = Crypto.randomUUID();
+    const now = new Date().toISOString();
+    const startDate = input.start_date || now.split('T')[0];
+    
+    this.db.runSync(
+      `INSERT INTO tasks (id, title, cycle_length, visual_type, start_date, archived, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, input.title, input.cycle_length, input.visual_type, startDate, false, now, now]
+    );
+
+    const task = this.db.getFirstSync<Task>(
+      'SELECT * FROM tasks WHERE id = ?',
+      [id]
+    );
+    
+    if (!task) {
+      throw new Error('Failed to create task');
+    }
+    
+    return task;
   }
 
   async getTaskById(id: string): Promise<DatabaseResult<Task>> {

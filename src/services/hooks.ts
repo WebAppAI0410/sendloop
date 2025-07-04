@@ -40,7 +40,15 @@ export function useTasks() {
     }
   }, [database]);
 
-  const createTask = useCallback(async (input: TaskCreateInput) => {
+  const createTask = useCallback(async (input: TaskCreateInput, isPro: boolean = false) => {
+    // Free version limitation: only 1 active task allowed
+    if (!isPro && tasks.length > 0) {
+      // Archive existing tasks before creating new one
+      for (const task of tasks) {
+        await database.archiveTask(task.id);
+      }
+    }
+    
     const result = await database.createTask(input);
     if (result.success) {
       await loadTasks(); // Refresh tasks list
@@ -48,7 +56,7 @@ export function useTasks() {
     } else {
       throw new Error(result.error);
     }
-  }, [database, loadTasks]);
+  }, [database, loadTasks, tasks]);
 
   const updateTask = useCallback(async (id: string, updates: Partial<TaskCreateInput>) => {
     const result = await database.updateTask(id, updates);
