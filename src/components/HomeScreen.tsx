@@ -19,6 +19,7 @@ import { GrowthCanvas } from './GrowthCanvas';
 import { AnimatedSeedGrowth } from './animations/AnimatedSeedGrowth';
 import { LottieGrowthAnimation } from './animations/LottieGrowthAnimation';
 import plantGrowthAnimation from '../assets/animations/plant-growth-high-quality.json';
+import { AnimationPreview } from './AnimationPreview';
 import { useTasks, useTask, useTodayProgress } from '../services/hooks';
 import { useSubscription } from '../services/useSubscription';
 import { VisualType } from '../types/database';
@@ -27,11 +28,16 @@ import { useDatabase } from '../database/provider';
 
 const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+interface HomeScreenProps {
+  showAnimationPreview?: boolean;
+}
+
+export default function HomeScreen({ showAnimationPreview = false }: HomeScreenProps) {
   const { tasks, loading: tasksLoading } = useTasks();
   const { isPro } = useSubscription();
   const db = useDatabase();
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(showAnimationPreview);
   
   // Get current active task (Free version supports only 1 task)
   const currentTask = tasks.length > 0 ? tasks[0] : null;
@@ -107,6 +113,11 @@ export default function HomeScreen() {
   // Feature flag to switch between animation implementations
   const useLottieAnimation = true; // Set to true to use Lottie, false for SVG
 
+  // Show animation preview if requested
+  if (showPreview) {
+    return <AnimationPreview onClose={() => setShowPreview(false)} />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -118,14 +129,23 @@ export default function HomeScreen() {
           Day {achievedDays} of {cycleLength}
         </Text>
         
-        {/* Development Reset Button */}
+        {/* Development Buttons */}
         {__DEV__ && (
-          <TouchableOpacity 
-            style={styles.resetButton} 
-            onPress={handleResetData}
-          >
-            <Text style={styles.resetButtonText}>Reset App</Text>
-          </TouchableOpacity>
+          <View style={styles.devButtons}>
+            <TouchableOpacity 
+              style={styles.resetButton} 
+              onPress={handleResetData}
+            >
+              <Text style={styles.resetButtonText}>Reset App</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.resetButton, styles.previewButton]} 
+              onPress={() => setShowPreview(true)}
+            >
+              <Text style={styles.resetButtonText}>Preview Animation</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -239,14 +259,21 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.semibold,
     color: Colors.primary,
   },
-  resetButton: {
+  devButtons: {
     position: 'absolute',
     top: 0,
     right: 20,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  resetButton: {
     backgroundColor: '#FF4444',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
+  },
+  previewButton: {
+    backgroundColor: '#4CAF50',
   },
   resetButtonText: {
     color: '#FFFFFF',
