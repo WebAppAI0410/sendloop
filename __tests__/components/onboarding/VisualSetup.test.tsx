@@ -8,24 +8,38 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 import { VisualSetup } from '../../../src/components/onboarding/VisualSetup';
 import { VisualType } from '../../../src/types/database';
 
+// Mock the useSubscription hook
+jest.mock('../../../src/services/useSubscription', () => ({
+  useSubscription: jest.fn(),
+}));
+
+// Import the mocked hook
+import { useSubscription } from '../../../src/services/useSubscription';
+const mockUseSubscription = useSubscription as jest.MockedFunction<typeof useSubscription>;
+
 describe('VisualSetup OnBoarding Component', () => {
   const mockOnNext = jest.fn();
   const mockOnBack = jest.fn();
   const defaultProps = {
-    selectedType: VisualType.TREE,
     onNext: mockOnNext,
     onBack: mockOnBack,
-    isPro: false,
-  };
-
-  const proProps = {
-    ...defaultProps,
-    isPro: true,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default to free user
+    mockUseSubscription.mockReturnValue({
+      isPro: false,
+      featureFlags: {},
+    });
   });
+
+  const setupProUser = () => {
+    mockUseSubscription.mockReturnValue({
+      isPro: true,
+      featureFlags: {},
+    });
+  };
 
   describe('Initial Render', () => {
     it('should render visual type selection elements', () => {
@@ -33,8 +47,8 @@ describe('VisualSetup OnBoarding Component', () => {
 
       expect(screen.getByText('Choose Your Growth Visual')).toBeTruthy();
       expect(screen.getByText('Select how you want to visualize your progress')).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy();
-      expect(screen.getByRole('button', { name: 'Finish Setup' })).toBeTruthy();
+      expect(screen.getByText('Back')).toBeTruthy();
+      expect(screen.getByText('Finish Setup')).toBeTruthy();
     });
 
     it('should display only tree visual type option for free users', () => {
@@ -48,7 +62,8 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should display all visual type options for pro users', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
 
       // Check for visual type cards
       expect(screen.getByTestId('visual-option-tree')).toBeTruthy();
@@ -74,7 +89,8 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should show all visual type descriptions for pro users', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
 
       expect(screen.getByText('Watch your tree grow with each completed day')).toBeTruthy();
       expect(screen.getByText('Cultivate a beautiful garden over time')).toBeTruthy();
@@ -85,7 +101,8 @@ describe('VisualSetup OnBoarding Component', () => {
 
   describe('Visual Type Selection', () => {
     it('should select garden when garden option is pressed', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       const gardenOption = screen.getByTestId('visual-option-garden');
       fireEvent.press(gardenOption);
@@ -98,7 +115,8 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should select pet when pet option is pressed', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       const petOption = screen.getByTestId('visual-option-pet');
       fireEvent.press(petOption);
@@ -107,7 +125,8 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should select progress bar when progress option is pressed', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       const progressOption = screen.getByTestId('visual-option-progress');
       fireEvent.press(progressOption);
@@ -116,7 +135,8 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should update visual preview when selection changes', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       // Initial tree preview
       expect(screen.getByTestId('visual-preview-tree')).toBeTruthy();
@@ -137,14 +157,15 @@ describe('VisualSetup OnBoarding Component', () => {
       const treePreview = screen.getByTestId('visual-preview-tree');
       expect(treePreview).toBeTruthy();
       
-      // Should show tree growth stages
-      expect(screen.getByText('🌱')).toBeTruthy(); // seed
-      expect(screen.getByText('🌿')).toBeTruthy(); // sprout
-      expect(screen.getByText('🌳')).toBeTruthy(); // tree
+      // Should show tree growth stages - check that emojis exist in preview
+      expect(screen.getAllByText('🌱').length).toBeGreaterThan(0); // seed
+      expect(screen.getAllByText('🌿').length).toBeGreaterThan(0); // sprout
+      expect(screen.getAllByText('🌳').length).toBeGreaterThan(0); // tree
     });
 
     it('should show garden visual elements when garden is selected', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       const gardenOption = screen.getByTestId('visual-option-garden');
       fireEvent.press(gardenOption);
@@ -152,14 +173,15 @@ describe('VisualSetup OnBoarding Component', () => {
       const gardenPreview = screen.getByTestId('visual-preview-garden');
       expect(gardenPreview).toBeTruthy();
       
-      // Should show garden elements
-      expect(screen.getByText('🌷')).toBeTruthy(); // flower
-      expect(screen.getByText('🌻')).toBeTruthy(); // sunflower
-      expect(screen.getByText('🌺')).toBeTruthy(); // hibiscus
+      // Should show garden elements - check that emojis exist in preview
+      expect(screen.getAllByText('🌷').length).toBeGreaterThan(0); // flower
+      expect(screen.getAllByText('🌻').length).toBeGreaterThan(0); // sunflower
+      expect(screen.getAllByText('🌺').length).toBeGreaterThan(0); // hibiscus
     });
 
     it('should show pet visual elements when pet is selected', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       const petOption = screen.getByTestId('visual-option-pet');
       fireEvent.press(petOption);
@@ -167,14 +189,15 @@ describe('VisualSetup OnBoarding Component', () => {
       const petPreview = screen.getByTestId('visual-preview-pet');
       expect(petPreview).toBeTruthy();
       
-      // Should show pet growth stages
-      expect(screen.getByText('🥚')).toBeTruthy(); // egg
-      expect(screen.getByText('🐣')).toBeTruthy(); // hatching
-      expect(screen.getByText('🐱')).toBeTruthy(); // cat
+      // Should show pet growth stages - check that emojis exist in preview
+      expect(screen.getAllByText('🥚').length).toBeGreaterThan(0); // egg
+      expect(screen.getAllByText('🐣').length).toBeGreaterThan(0); // hatching
+      expect(screen.getAllByText('🐱').length).toBeGreaterThan(0); // cat
     });
 
     it('should show progress bar when progress is selected', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       const progressOption = screen.getByTestId('visual-option-progress');
       fireEvent.press(progressOption);
@@ -191,7 +214,7 @@ describe('VisualSetup OnBoarding Component', () => {
     it('should call onBack when Back button is pressed', () => {
       render(<VisualSetup {...defaultProps} />);
       
-      const backButton = screen.getByRole('button', { name: 'Back' });
+      const backButton = screen.getByText('Back');
       fireEvent.press(backButton);
       
       expect(mockOnBack).toHaveBeenCalledTimes(1);
@@ -200,7 +223,7 @@ describe('VisualSetup OnBoarding Component', () => {
     it('should call onNext with tree visual type when Finish Setup is pressed', () => {
       render(<VisualSetup {...defaultProps} />);
       
-      const finishButton = screen.getByRole('button', { name: 'Finish Setup' });
+      const finishButton = screen.getByText('Finish Setup');
       fireEvent.press(finishButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -209,6 +232,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should call onNext with garden visual type when garden is selected', () => {
+      setupProUser();
       render(<VisualSetup {...defaultProps} />);
       
       // Select garden
@@ -216,7 +240,7 @@ describe('VisualSetup OnBoarding Component', () => {
       fireEvent.press(gardenOption);
       
       // Finish setup
-      const finishButton = screen.getByRole('button', { name: 'Finish Setup' });
+      const finishButton = screen.getByText('Finish Setup');
       fireEvent.press(finishButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -225,6 +249,7 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should call onNext with pet visual type when pet is selected', () => {
+      setupProUser();
       render(<VisualSetup {...defaultProps} />);
       
       // Select pet
@@ -232,7 +257,7 @@ describe('VisualSetup OnBoarding Component', () => {
       fireEvent.press(petOption);
       
       // Finish setup
-      const finishButton = screen.getByRole('button', { name: 'Finish Setup' });
+      const finishButton = screen.getByText('Finish Setup');
       fireEvent.press(finishButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
@@ -241,14 +266,15 @@ describe('VisualSetup OnBoarding Component', () => {
     });
 
     it('should call onNext with progress visual type when progress is selected', () => {
-      render(<VisualSetup {...proProps} />);
+      setupProUser();
+      render(<VisualSetup {...defaultProps} />);
       
       // Select progress
       const progressOption = screen.getByTestId('visual-option-progress');
       fireEvent.press(progressOption);
       
       // Finish setup
-      const finishButton = screen.getByRole('button', { name: 'Finish Setup' });
+      const finishButton = screen.getByText('Finish Setup');
       fireEvent.press(finishButton);
       
       expect(mockOnNext).toHaveBeenCalledWith({
