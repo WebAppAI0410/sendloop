@@ -3,11 +3,10 @@
  * Replaces AnimatedSeedGrowth with Live2D quality animations
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
-  Animated,
   Text,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
@@ -34,11 +33,11 @@ export const LottieGrowthAnimation: React.FC<LottieGrowthAnimationProps> = ({
   onStageChange,
   testID = 'lottie-growth-animation',
 }) => {
-  const animationProgress = useRef(new Animated.Value(0)).current;
   const lottieRef = useRef<LottieView>(null);
+  const [prevStage, setPrevStage] = useState<GrowthStage>(GrowthStage.SEED);
   
   // Calculate Lottie progress (0-1) from percentage (0-100)
-  const targetProgress = Math.min(100, Math.max(0, progress)) / 100;
+  const lottieProgress = Math.min(100, Math.max(0, progress)) / 100;
   
   // Determine growth stage based on progress
   const getStageFromProgress = (prog: number): GrowthStage => {
@@ -50,17 +49,18 @@ export const LottieGrowthAnimation: React.FC<LottieGrowthAnimationProps> = ({
   
   const currentStage = getStageFromProgress(progress);
 
-  // Animate progress changes smoothly
+  // Notify stage changes
   useEffect(() => {
-    Animated.timing(animationProgress, {
-      toValue: targetProgress,
-      duration: 1000,
-      useNativeDriver: false, // Lottie progress can't use native driver
-    }).start();
-    
-    // Notify stage changes
+    if (currentStage !== prevStage) {
+      onStageChange?.(currentStage);
+      setPrevStage(currentStage);
+    }
+  }, [currentStage, prevStage, onStageChange]);
+
+  // Call onStageChange on initial mount
+  useEffect(() => {
     onStageChange?.(currentStage);
-  }, [targetProgress, currentStage]);
+  }, []);
 
   // Default to sample animation if none provided
   const animationFile = animationSource || require('../../assets/animations/plant-growing-sample.json');
@@ -81,7 +81,7 @@ export const LottieGrowthAnimation: React.FC<LottieGrowthAnimationProps> = ({
       <LottieView
         ref={lottieRef}
         source={animationFile}
-        progress={animationProgress}
+        progress={lottieProgress}
         style={styles.animation}
         resizeMode="contain"
         testID={`${testID}-lottie`}

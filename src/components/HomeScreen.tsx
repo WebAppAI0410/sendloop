@@ -18,6 +18,7 @@ import { SeedButton } from './SeedButton';
 import { GrowthCanvas } from './GrowthCanvas';
 import { AnimatedSeedGrowth } from './animations/AnimatedSeedGrowth';
 import { LottieGrowthAnimation } from './animations/LottieGrowthAnimation';
+import plantGrowthAnimation from '../assets/animations/plant-growth-high-quality.json';
 import { useTasks, useTask, useTodayProgress } from '../services/hooks';
 import { useSubscription } from '../services/useSubscription';
 import { VisualType } from '../types/database';
@@ -135,6 +136,7 @@ export default function HomeScreen() {
             <LottieGrowthAnimation
               progress={animationProgress}
               size={width - (Spacing.lg * 4)}
+              animationSource={plantGrowthAnimation}
               onStageChange={(stage) => {
                 console.log('Growth stage changed:', stage);
               }}
