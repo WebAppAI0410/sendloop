@@ -19,6 +19,7 @@ import { GrowthCanvas } from './GrowthCanvas';
 import { AnimatedSeedGrowth } from './animations/AnimatedSeedGrowth';
 import { LottieGrowthAnimation } from './animations/LottieGrowthAnimation';
 import plantGrowthAnimation from '../assets/animations/plant-growth-high-quality.json';
+import { LadderClimbAnimation } from './animations/LadderClimbAnimation';
 import { AnimationPreview } from './AnimationPreview';
 import { useTasks, useTask, useTodayProgress } from '../services/hooks';
 import { useSubscription } from '../services/useSubscription';
@@ -111,11 +112,11 @@ export default function HomeScreen({ showAnimationPreview = false }: HomeScreenP
   const animationProgress = Math.min(100, Math.max(0, (achievedDays / cycleLength) * 100));
   
   // Feature flag to switch between animation implementations
-  const useLottieAnimation = true; // Set to true to use Lottie, false for SVG
+  const useAnimationType: 'lottie' | 'ladder' | 'svg' = 'ladder'; // New ladder animation!
 
   // Show animation preview if requested
   if (showPreview) {
-    return <AnimationPreview onClose={() => setShowPreview(false)} />;
+    return <AnimationPreview onClose={() => setShowPreview(false)} animationType={useAnimationType} />;
   }
 
   return (
@@ -152,7 +153,16 @@ export default function HomeScreen({ showAnimationPreview = false }: HomeScreenP
       {/* Growth Visualization */}
       <View style={styles.growthCanvas}>
         {(currentTask?.visual_type || VisualType.TREE) === VisualType.TREE ? (
-          useLottieAnimation ? (
+          useAnimationType === 'ladder' ? (
+            <LadderClimbAnimation
+              achievedDays={achievedDays}
+              cycleLength={cycleLength}
+              size={width - (Spacing.lg * 4)}
+              onMilestone={(day) => {
+                console.log('Milestone reached:', day);
+              }}
+            />
+          ) : useAnimationType === 'lottie' ? (
             <LottieGrowthAnimation
               progress={animationProgress}
               size={width - (Spacing.lg * 4)}

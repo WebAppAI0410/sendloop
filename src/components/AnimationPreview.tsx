@@ -14,15 +14,17 @@ import {
 import Slider from '@react-native-community/slider';
 import { LottieGrowthAnimation } from './animations/LottieGrowthAnimation';
 import plantGrowthAnimation from '../assets/animations/plant-growth-high-quality.json';
+import { LadderClimbAnimation } from './animations/LadderClimbAnimation';
 import { Colors, Typography, Spacing } from '../utils/theme';
 
 const { width } = Dimensions.get('window');
 
 interface AnimationPreviewProps {
   onClose?: () => void;
+  animationType?: 'lottie' | 'ladder' | 'svg';
 }
 
-export const AnimationPreview: React.FC<AnimationPreviewProps> = ({ onClose }) => {
+export const AnimationPreview: React.FC<AnimationPreviewProps> = ({ onClose, animationType = 'lottie' }) => {
   const [progress, setProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStage, setCurrentStage] = useState('seed');
@@ -71,12 +73,23 @@ export const AnimationPreview: React.FC<AnimationPreviewProps> = ({ onClose }) =
       </View>
 
       <View style={styles.animationContainer}>
-        <LottieGrowthAnimation
-          progress={progress}
-          size={width - (Spacing.lg * 4)}
-          animationSource={plantGrowthAnimation}
-          onStageChange={setCurrentStage}
-        />
+        {animationType === 'ladder' ? (
+          <LadderClimbAnimation
+            achievedDays={getDayFromProgress(progress)}
+            cycleLength={60}
+            size={width - (Spacing.lg * 4)}
+            onMilestone={(day) => {
+              console.log('Preview milestone:', day);
+            }}
+          />
+        ) : (
+          <LottieGrowthAnimation
+            progress={progress}
+            size={width - (Spacing.lg * 4)}
+            animationSource={plantGrowthAnimation}
+            onStageChange={setCurrentStage}
+          />
+        )}
       </View>
 
       <View style={styles.controls}>

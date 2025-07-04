@@ -17,7 +17,8 @@ module.exports = {
     '!**/node_modules/**'
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    'react-native-svg': '<rootDir>/__mocks__/react-native-svg.js'
   },
   testTimeout: 20000
 };
