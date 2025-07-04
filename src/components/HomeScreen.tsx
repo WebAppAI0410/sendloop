@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import { SeedButton } from './SeedButton';
 import { GrowthCanvas } from './GrowthCanvas';
+import { AnimatedSeedGrowth } from './animations/AnimatedSeedGrowth';
+import { LottieGrowthAnimation } from './animations/LottieGrowthAnimation';
 import { useTasks, useTask, useTodayProgress } from '../services/hooks';
 import { useSubscription } from '../services/useSubscription';
 import { VisualType } from '../types/database';
@@ -97,6 +99,12 @@ export default function HomeScreen() {
   const progress = taskWithProgress?.completion_percentage || 0;
   const achievedDays = taskWithProgress?.achieved_days || 0;
   const cycleLength = currentTask?.cycle_length || 30;
+  
+  // Calculate animation progress for daily growth (0-100% over cycle)
+  const animationProgress = Math.min(100, Math.max(0, (achievedDays / cycleLength) * 100));
+  
+  // Feature flag to switch between animation implementations
+  const useLottieAnimation = true; // Set to true to use Lottie, false for SVG
 
   return (
     <SafeAreaView style={styles.container}>
@@ -120,14 +128,32 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* Growth Canvas */}
+      {/* Growth Visualization */}
       <View style={styles.growthCanvas}>
-        <GrowthCanvas
-          visualType={currentTask?.visual_type || VisualType.TREE}
-          achievedDays={achievedDays}
-          cycleLength={cycleLength}
-          showGrowthAnimation={false}
-        />
+        {(currentTask?.visual_type || VisualType.TREE) === VisualType.TREE ? (
+          useLottieAnimation ? (
+            <LottieGrowthAnimation
+              progress={animationProgress}
+              size={width - (Spacing.lg * 4)}
+              onStageChange={(stage) => {
+                console.log('Growth stage changed:', stage);
+              }}
+            />
+          ) : (
+            <AnimatedSeedGrowth
+              progress={animationProgress}
+              size={width - (Spacing.lg * 4)}
+              showParticles={achievedDays > 0}
+            />
+          )
+        ) : (
+          <GrowthCanvas
+            visualType={currentTask?.visual_type || VisualType.TREE}
+            achievedDays={achievedDays}
+            cycleLength={cycleLength}
+            showGrowthAnimation={false}
+          />
+        )}
       </View>
 
       {/* Seed Button */}

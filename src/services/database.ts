@@ -29,8 +29,8 @@ export class DatabaseService {
         return { success: false, error: 'Task title cannot be empty' };
       }
       
-      if (input.cycle_length < 3 || input.cycle_length > 180) {
-        return { success: false, error: 'Cycle length must be between 3 and 180 days' };
+      if (input.cycle_length < 3 || input.cycle_length > 60) {
+        return { success: false, error: 'Cycle length must be between 3 and 60 days' };
       }
 
       const id = Crypto.randomUUID();

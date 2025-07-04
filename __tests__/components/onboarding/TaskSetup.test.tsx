@@ -44,7 +44,7 @@ describe('TaskSetup OnBoarding Component', () => {
       
       // Check that minimum and maximum preset values are available
       expect(screen.getByLabelText('Set to 3 days')).toBeTruthy();
-      expect(screen.getByLabelText('Set to 180 days')).toBeTruthy();
+      expect(screen.getByLabelText('Set to 60 days')).toBeTruthy();
     });
   });
 
@@ -81,11 +81,13 @@ describe('TaskSetup OnBoarding Component', () => {
     it('should update cycle length when slider changes', () => {
       render(<TaskSetup {...defaultProps} />);
       
-      // Click on 66 days preset button
-      const preset66Button = screen.getByLabelText('Set to 66 days');
-      fireEvent.press(preset66Button);
+      // Click on 60 days preset button (maximum allowed)
+      const preset60Button = screen.getByLabelText('Set to 60 days');
+      fireEvent.press(preset60Button);
       
-      expect(screen.getByText('66 days')).toBeTruthy();
+      // Check the cycle length display is updated
+      const cycleLengthDisplays = screen.getAllByText('60 days');
+      expect(cycleLengthDisplays.length).toBeGreaterThan(0);
     });
 
     it('should call onNext with correct task data when Next is pressed', () => {

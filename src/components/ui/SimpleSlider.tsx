@@ -46,8 +46,9 @@ export function SimpleSlider({
   // Calculate percentage for current value
   const percentage = ((value - minimumValue) / (maximumValue - minimumValue)) * 100;
 
-  // Create preset values for easy selection
-  const presetValues = [3, 7, 14, 21, 30, 66, 90, 180];
+  // Create preset values for easy selection based on min/max range
+  const allPresetValues = [3, 7, 14, 21, 30, 45, 60, 66, 90, 180];
+  const presetValues = allPresetValues.filter(val => val >= minimumValue && val <= maximumValue);
   
   const handlePresetPress = (presetValue: number) => {
     if (presetValue >= minimumValue && presetValue <= maximumValue) {

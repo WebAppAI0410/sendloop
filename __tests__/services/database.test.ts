@@ -58,7 +58,10 @@ describe('DatabaseService - Task Creation', () => {
       const result = await databaseService.createTask(taskInput);
 
       // Assert
-      expect(result).toEqual(expectedTask);
+      expect(result).toEqual({
+        success: true,
+        data: expectedTask
+      });
       expect(mockDb.runSync).toHaveBeenCalledWith(
         expect.stringContaining('INSERT INTO tasks'),
         expect.arrayContaining([
@@ -82,24 +85,32 @@ describe('DatabaseService - Task Creation', () => {
         visual_type: VisualType.TREE,
       };
 
-      // Act & Assert
-      await expect(databaseService.createTask(invalidTaskInput))
-        .rejects
-        .toThrow('Cycle length must be between 3 and 180 days');
+      // Act
+      const result = await databaseService.createTask(invalidTaskInput);
+
+      // Assert
+      expect(result).toEqual({
+        success: false,
+        error: 'Cycle length must be between 3 and 60 days'
+      });
     });
 
     it('should reject invalid cycle length (too long)', async () => {
       // Arrange
       const invalidTaskInput: TaskCreateInput = {
         title: 'Invalid Task',
-        cycle_length: 181, // More than maximum of 180
+        cycle_length: 61, // More than maximum of 60
         visual_type: VisualType.TREE,
       };
 
-      // Act & Assert
-      await expect(databaseService.createTask(invalidTaskInput))
-        .rejects
-        .toThrow('Cycle length must be between 3 and 180 days');
+      // Act
+      const result = await databaseService.createTask(invalidTaskInput);
+
+      // Assert
+      expect(result).toEqual({
+        success: false,
+        error: 'Cycle length must be between 3 and 60 days'
+      });
     });
 
     it('should reject empty task title', async () => {
@@ -110,10 +121,14 @@ describe('DatabaseService - Task Creation', () => {
         visual_type: VisualType.TREE,
       };
 
-      // Act & Assert
-      await expect(databaseService.createTask(invalidTaskInput))
-        .rejects
-        .toThrow('Task title cannot be empty');
+      // Act
+      const result = await databaseService.createTask(invalidTaskInput);
+
+      // Assert
+      expect(result).toEqual({
+        success: false,
+        error: 'Task title cannot be empty'
+      });
     });
   });
 });

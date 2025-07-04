@@ -97,24 +97,24 @@ export function TaskSetup({ onNext }: TaskSetupProps) {
           <SimpleSlider
             style={styles.slider}
             minimumValue={3}
-            maximumValue={180}
+            maximumValue={60}
             value={cycleLength}
             onValueChange={(value) => setCycleLength(Math.round(value))}
             minimumTrackTintColor={Colors.primary}
             maximumTrackTintColor={Colors.light.border}
             testID="cycle-length-slider"
             accessibilityLabel="Cycle length slider"
-            accessibilityHint={`Set cycle length from 3 to 180 days. Currently ${cycleLength} days`}
+            accessibilityHint={`Set cycle length from 3 to 60 days. Currently ${cycleLength} days`}
             accessibilityValue={{
               min: 3,
-              max: 180,
+              max: 60,
               now: cycleLength,
             }}
           />
           
           <View style={styles.sliderLabels}>
             <Text style={styles.sliderLabel}>3 days</Text>
-            <Text style={styles.sliderLabel}>180 days</Text>
+            <Text style={styles.sliderLabel}>60 days</Text>
           </View>
         </View>
 
