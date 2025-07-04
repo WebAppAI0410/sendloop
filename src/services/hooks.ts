@@ -43,18 +43,25 @@ export function useTasks() {
   const createTask = useCallback(async (input: TaskCreateInput, isPro: boolean = false) => {
     // Free version limitation: only 1 active task allowed
     if (!isPro && tasks.length > 0) {
+      console.log('Free user detected, archiving existing tasks...');
       // Archive existing tasks before creating new one
       for (const task of tasks) {
-        await database.archiveTask(task.id);
+        const archiveResult = await database.archiveTask(task.id);
+        if (!archiveResult.success) {
+          console.error('Failed to archive task:', archiveResult.error);
+        }
       }
     }
     
+    console.log('Creating task with database service...');
     const result = await database.createTask(input);
-    if (result.success) {
+    if (result.success && result.data) {
+      console.log('Task created, refreshing task list...');
       await loadTasks(); // Refresh tasks list
-      return result.data!;
+      return result.data;
     } else {
-      throw new Error(result.error);
+      console.error('Task creation failed:', result.error);
+      throw new Error(result.error || 'Failed to create task');
     }
   }, [database, loadTasks, tasks]);
 

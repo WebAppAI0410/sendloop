@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { OnBoardingFlow, OnBoardingData } from './onboarding/OnBoardingFlow';
 import { useTasks } from '../services/hooks';
 import { useSubscription } from '../services/useSubscription';
@@ -31,22 +31,44 @@ export function AppNavigator() {
         visual_type: data.visualType,
       };
 
+      console.log('Creating task with data:', taskInput);
+      console.log('isPro status:', isPro);
+      
       const createdTask = await createTask(taskInput, isPro);
+      console.log('Task created successfully:', createdTask);
 
       // Set up notifications if enabled
       if (data.notifications.enabled && data.notifications.time && createdTask) {
-        await notificationService.scheduleTaskReminder({
-          enabled: true,
-          time: data.notifications.time,
-          taskId: createdTask.id,
-        });
+        console.log('Setting up notifications:', data.notifications);
+        try {
+          await notificationService.scheduleTaskReminder({
+            enabled: true,
+            time: data.notifications.time,
+            taskId: createdTask.id,
+          });
+          console.log('Notifications scheduled successfully');
+        } catch (notifError) {
+          console.error('Notification setup failed:', notifError);
+          // Continue even if notification setup fails
+        }
       }
 
       // Hide onboarding and show home
       setShowOnBoarding(false);
     } catch (error) {
       console.error('Failed to complete onboarding:', error);
-      // TODO: Show error message to user
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        type: error?.constructor?.name,
+      });
+      
+      // Show user-friendly error message
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'Failed to complete onboarding. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 

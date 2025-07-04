@@ -22,36 +22,53 @@ export class DatabaseService {
    * TASK OPERATIONS
    */
 
-  async createTask(input: TaskCreateInput): Promise<Task> {
-    // Validation - TDD Red -> Green implementation
-    if (!input.title || input.title.trim() === '') {
-      throw new Error('Task title cannot be empty');
-    }
-    
-    if (input.cycle_length < 3 || input.cycle_length > 180) {
-      throw new Error('Cycle length must be between 3 and 180 days');
-    }
+  async createTask(input: TaskCreateInput): Promise<DatabaseResult<Task>> {
+    try {
+      // Validation - TDD Red -> Green implementation
+      if (!input.title || input.title.trim() === '') {
+        return { success: false, error: 'Task title cannot be empty' };
+      }
+      
+      if (input.cycle_length < 3 || input.cycle_length > 180) {
+        return { success: false, error: 'Cycle length must be between 3 and 180 days' };
+      }
 
-    const id = Crypto.randomUUID();
-    const now = new Date().toISOString();
-    const startDate = input.start_date || now.split('T')[0];
-    
-    this.db.runSync(
-      `INSERT INTO tasks (id, title, cycle_length, visual_type, start_date, archived, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, input.title, input.cycle_length, input.visual_type, startDate, false, now, now]
-    );
+      const id = Crypto.randomUUID();
+      const now = new Date().toISOString();
+      const startDate = input.start_date || now.split('T')[0];
+      
+      console.log('Inserting task into database:', {
+        id,
+        title: input.title,
+        cycle_length: input.cycle_length,
+        visual_type: input.visual_type,
+        start_date: startDate,
+      });
+      
+      this.db.runSync(
+        `INSERT INTO tasks (id, title, cycle_length, visual_type, start_date, archived, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, input.title, input.cycle_length, input.visual_type, startDate, false, now, now]
+      );
 
-    const task = this.db.getFirstSync<Task>(
-      'SELECT * FROM tasks WHERE id = ?',
-      [id]
-    );
-    
-    if (!task) {
-      throw new Error('Failed to create task');
+      const task = this.db.getFirstSync<Task>(
+        'SELECT * FROM tasks WHERE id = ?',
+        [id]
+      );
+      
+      if (!task) {
+        return { success: false, error: 'Failed to create task' };
+      }
+      
+      console.log('Task created successfully in database:', task);
+      return { success: true, data: task };
+    } catch (error) {
+      console.error('Database error creating task:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown database error' 
+      };
     }
-    
-    return task;
   }
 
   async getTaskById(id: string): Promise<DatabaseResult<Task>> {
